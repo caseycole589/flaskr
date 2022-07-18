@@ -10,6 +10,7 @@ QUESTIONS_PER_PAGE = 10
 
 def create_app(test_config=None):
     # create and configure the app
+    
     app = Flask(__name__)
     setup_db(app)
 
