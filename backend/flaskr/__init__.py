@@ -1,47 +1,67 @@
 import os
 from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 import random
 
 from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
 
+
 def create_app(test_config=None):
     # create and configure the app
     
     app = Flask(__name__)
     setup_db(app)
+   
 
     """
-    @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
+    Set up CORS. Allow '*' for origins.
     """
-
+    CORS(app, resources={r"/*": {"origins": "*"}})
+    
+   
     """
     @TODO: Use the after_request decorator to set Access-Control-Allow
     """
+    @app.after_request
+    def after_request(response):
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+        # @TODO look into removing unused 
+        response.headers.add('Access-Control-Allow-Headers', 'GET, POST, PATCH, DELETE, OPTIONS')
+        return response
 
     """
-    @TODO:
-    Create an endpoint to handle GET requests
-    for all available categories.
+    endpoint to handle GET requests for all available categories.
     """
-
-
+    @app.route('/categories')
+    def get_categories():
+        return jsonify({
+            'categories': get_formatted_categories()
+        })
     """
     @TODO:
     Create an endpoint to handle GET requests for questions,
     including pagination (every 10 questions).
     This endpoint should return a list of questions,
     number of total questions, current category, categories.
-
     TEST: At this point, when you start the application
     you should see questions and categories generated,
     ten questions per page and pagination at the bottom of the screen for three pages.
     Clicking on the page numbers should update the questions.
     """
-
+    @app.route('/questions', methods=['GET'])
+    def get_questions():
+        page = request.args.get('page', 1, type=int)
+        questions = Question.query.all()
+        formatted_questions = [question.format() for question in questions]
+        #@TODO: add current category
+        return jsonify({
+            'questions':formatted_questions,
+            'total_questions': len(formatted_questions),
+            'categories': get_formatted_categories()
+        })
     """
     @TODO:
     Create an endpoint to DELETE question using a question ID.
@@ -101,3 +121,11 @@ def create_app(test_config=None):
 
     return app
 
+def get_formatted_categories():
+    categories = Category.query.all()
+    categories_formatted = {}
+    # make a dictionary for the categories its the datatype the font end wants
+    for cat in categories:
+        formatted = cat.format()
+        categories_formatted[formatted['id']] = formatted['type'] 
+    return categories_formatted 
