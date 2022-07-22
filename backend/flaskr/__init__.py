@@ -23,13 +23,13 @@ def create_app(test_config=None):
     
    
     """
-    @TODO: Use the after_request decorator to set Access-Control-Allow
+    Use the after_request decorator to set Access-Control-Allow
     """
     @app.after_request
     def after_request(response):
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization')
         # @TODO look into removing unused 
-        response.headers.add('Access-Control-Allow-Headers', 'GET, POST, PATCH, DELETE, OPTIONS')
+        response.headers.add('Access-Control-Allow-Headers', 'GET, POST, DELETE')
         return response
 
     """
@@ -54,6 +54,8 @@ def create_app(test_config=None):
     @app.route('/questions', methods=['GET'])
     def get_questions():
         page = request.args.get('page', 1, type=int)
+        current_caterory = request.args.get('currentCategory')
+        print(current_caterory)
         start = (page - 1) * 10
         end = start + 10
         questions = Question.query.all()
@@ -62,7 +64,8 @@ def create_app(test_config=None):
         return jsonify({
             'questions':formatted_questions[start:end],
             'total_questions': len(formatted_questions),
-            'categories': get_formatted_categories()
+            'categories': get_formatted_categories(),
+            'current_category': current_caterory if current_caterory != "null" else None
         })
     """
     @TODO:
@@ -120,12 +123,13 @@ def create_app(test_config=None):
     """
     @app.route('/categories/<string:category_id>/questions', methods=['GET'])
     def get_questions_by_category(category_id):
+        current_caterory = request.args.get('currentCategory')
         questions = Question.query.filter_by(category=category_id).all()
         formatted_questions = [question.format() for question in questions]
         return jsonify({
             'questions':formatted_questions,
             'total_questions': len(formatted_questions),
-            'current_category': category_id
+            'current_category': current_caterory
         })
     """
     @TODO:
@@ -138,7 +142,17 @@ def create_app(test_config=None):
     one question at a time is displayed, the user is allowed to answer
     and shown whether they were correct or not.
     """
-
+    @app.route("/questions/search", methods=['POST'])
+    def search_questions():
+        search_term = request.get_json()['searchTerm']
+        current_caterory = request.get_json()['currentCategory']
+        questions = Question.query.filter(Question.question.ilike(f'%{search_term}%')).all()
+        formatted_questions = [question.format() for question in questions]
+        return jsonify({
+            "questions": formatted_questions,
+            "totalQuestions": len(formatted_questions),
+            "currentCategory": current_caterory
+        })
     """
     Create error handlers for all expected errors
     including 404 and 422.
