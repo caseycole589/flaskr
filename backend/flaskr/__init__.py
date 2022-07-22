@@ -80,7 +80,17 @@ def create_app(test_config=None):
     the form will clear and the question will appear at the end of the last page
     of the questions list in the "List" tab.
     """
-
+    @app.route('/questions', methods=['POST'])
+    def create_question():
+        parsed = request.get_json()
+        question = Question(
+            question = parsed['question'],
+            answer = parsed['answer'],
+            difficulty = parsed['difficulty'],
+            category = parsed['category']
+        )
+        question.insert()
+        return jsonify(success=True) 
     """
     @TODO:
     Create a POST endpoint to get questions based on a search term.
@@ -92,6 +102,8 @@ def create_app(test_config=None):
     Try using the word "title" to start.
     """
 
+
+
     """
     @TODO:
     Create a GET endpoint to get questions based on category.
@@ -100,7 +112,15 @@ def create_app(test_config=None):
     categories in the left column will cause only questions of that
     category to be shown.
     """
-
+    @app.route('/categories/<string:category_id>/questions', methods=['GET'])
+    def get_questions_by_category(category_id):
+        questions = Question.query.filter_by(category=category_id).all()
+        formatted_questions = [question.format() for question in questions]
+        return jsonify({
+            'questions':formatted_questions,
+            'total_questions': len(formatted_questions),
+            'current_category': category_id
+        })
     """
     @TODO:
     Create a POST endpoint to get questions to play the quiz.
@@ -114,10 +134,24 @@ def create_app(test_config=None):
     """
 
     """
-    @TODO:
     Create error handlers for all expected errors
     including 404 and 422.
     """
+    @app.errorhandler(404)
+    def not_found(error):
+        return jsonify({
+            "success": False, 
+            "error": 404,
+            "message": "Not found"
+        }), 404
+
+    @app.errorhandler(422)
+    def unprocessable(error):
+        return jsonify({
+            "success": False, 
+            "error": 422,
+            "message": "Unprocessable"
+            }), 422 
 
     return app
 
