@@ -100,14 +100,18 @@ def create_app(test_config=None):
             abort(422)
         return jsonify({'success':True})
     """
-     a POST endpoint to get questions based on a search term.
+    a POST endpoint to get questions based on a search term.
     It should return any questions for whom the search term
     is a substring of the question.
 
     """
     @app.route("/questions/search", methods=['POST'])
     def search_questions():
-        search_term = request.get_json()['searchTerm']
+        try: 
+            search_term = request.get_json()['searchTerm']
+        except Exception as e:
+            abort(400)
+
         current_caterory = request.get_json()['currentCategory']
         questions = Question.query.filter(Question.question.ilike(f'%{search_term}%')).all()
         formatted_questions = [question.format() for question in questions]
@@ -154,6 +158,8 @@ def create_app(test_config=None):
             questions = Question.query.all()
         else: 
             questions = Question.query.filter(Question.category == str(quiz_category['id'])).all()
+        if len(questions) == 0:
+            abort(404)
         questions_formatted = [question.format() for question in questions]
         # filter out questions already seen
         filtered_questions_formatted = list(filter(lambda x: x['id'] not in previous_questions, questions_formatted))

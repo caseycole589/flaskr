@@ -50,7 +50,7 @@ class TriviaTestCase(unittest.TestCase):
         }
 
         self.quiz_fail = {
-            "previous_question": [10, 11],
+            "previous_questions": [10, 11],
             "quiz_category": {
                 "type": "click",
                 "id": 500
@@ -149,33 +149,32 @@ class TriviaTestCase(unittest.TestCase):
     def test_search_question(self):
         res = self.client().post("/questions/search", json=self.search_term)
         data = json.loads(res.data)
-        print(data)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         self.assertTrue(data['total_questions'])
         self.assertTrue(len(data['questions']))
         self.assertTrue(data['current_category'])
 
-    # def test_search_fails(self):
-    #     res = self.client().post("/questions/search")
-    #     data = json.loads(res.data)
-    #     self.assertEqual(res.status_code, 400)
-    #     self.assertEqual(data["success"], False)
-    #     self.assertEqual(data["message"], "Bad request")
+    def test_search_term_not_supplied_fails(self):
+        res = self.client().post("/questions/search")
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(data["success"], False)
+        self.assertEqual(data["message"], "Bad request")
 
-    # def test_get_quiz(self):
-    #     res = self.client().post("/quizzes", json=self.quiz_parameter_all)
-    #     data = json.loads(res.data)
-    #     self.assertEqual(res.status_code, 200)
-    #     self.assertEqual(data['success'], True)
-    #     self.assertTrue(data['question'])
+    def test_get_quiz(self):
+        res = self.client().post("/quizzes", json=self.quiz_parameter_all)
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['question'])
 
-    # def test_404_if_get_test_quiz_fails(self):
-    #     res = self.client().post("/quizzes", json=self.quiz_fail)
-    #     data = json.loads(res.data)
-    #     self.assertEqual(res.status_code, 404)
-    #     self.assertEqual(data["success"], False)
-    #     self.assertEqual(data["message"], "Not found")
+    def test_quiz_no_questions_fails(self):
+        res = self.client().post("/quizzes", json=self.quiz_fail)
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data["success"], False)
+        self.assertEqual(data["message"], "Not found")
 
 # Make the tests conveniently executable
 if __name__ == "__main__":
