@@ -28,7 +28,6 @@ def create_app(test_config=None):
     @app.after_request
     def after_request(response):
         response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-        # @TODO look into removing unused 
         response.headers.add('Access-Control-Allow-Headers', 'GET, POST, DELETE')
         return response
 
@@ -60,7 +59,6 @@ def create_app(test_config=None):
         end = start + 10
         questions = Question.query.all()
         formatted_questions = [question.format() for question in questions]
-        #@TODO: add current category
         return jsonify({
             'questions':formatted_questions[start:end],
             'total_questions': len(formatted_questions),
@@ -157,16 +155,23 @@ def create_app(test_config=None):
         parsed = request.get_json()
         quiz_category = parsed['quiz_category']
         previous_questions =parsed['previous_questions']
-        print(type(quiz_category['id']))
-        if(quiz_category['id'] == "0"):
-            print('here')
+        if(quiz_category['id'] == 0):
             questions = Question.query.all()
         else: 
-            questions = Question.query.filter(Question.id == quiz_category['id']).all()
+            questions = Question.query.filter(Question.category == str(quiz_category['id'])).all()
         questions_formatted = [question.format() for question in questions]
-        print(questions_formatted)
-        # print(questions_formatted)
-        return jsonify(success=True)
+        # filter out questions already seen
+        filtered_questions_formatted = list(filter(lambda x: x['id'] not in previous_questions, questions_formatted))
+        # make sure we have a question
+        if len(filtered_questions_formatted) > 0:
+            # make the question random
+            question = filtered_questions_formatted[random.randint(0,len(filtered_questions_formatted)) - 1]
+        else: 
+            question = None
+        return jsonify({
+            'previousQuestions': previous_questions,
+            'question': question
+        })
     """
     Create error handlers for all expected errors
     including 404 and 422.
@@ -185,8 +190,23 @@ def create_app(test_config=None):
             "success": False, 
             "error": 422,
             "message": "Unprocessable"
-            }), 422 
+        }), 422 
 
+    @app.errorhandler(400)
+    def bad_request(error):
+        return jsonify({
+            "success": False, 
+            "error": 400,
+            "message": "bad request"
+        }), 400
+    @app.errorhandler(500)
+    def internal_error(error):
+        return jsonify({
+            "success": False, 
+            "error": 500,
+            "message": "internal server error"
+        }), 500
+        
     return app
 
 def get_formatted_categories():
