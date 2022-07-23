@@ -110,7 +110,17 @@ def create_app(test_config=None):
     only question that include that string within their question.
     Try using the word "title" to start.
     """
-
+    @app.route("/questions/search", methods=['POST'])
+    def search_questions():
+        search_term = request.get_json()['searchTerm']
+        current_caterory = request.get_json()['currentCategory']
+        questions = Question.query.filter(Question.question.ilike(f'%{search_term}%')).all()
+        formatted_questions = [question.format() for question in questions]
+        return jsonify({
+            "questions": formatted_questions,
+            "totalQuestions": len(formatted_questions),
+            "currentCategory": current_caterory
+        })
 
 
     """
@@ -142,17 +152,21 @@ def create_app(test_config=None):
     one question at a time is displayed, the user is allowed to answer
     and shown whether they were correct or not.
     """
-    @app.route("/questions/search", methods=['POST'])
-    def search_questions():
-        search_term = request.get_json()['searchTerm']
-        current_caterory = request.get_json()['currentCategory']
-        questions = Question.query.filter(Question.question.ilike(f'%{search_term}%')).all()
-        formatted_questions = [question.format() for question in questions]
-        return jsonify({
-            "questions": formatted_questions,
-            "totalQuestions": len(formatted_questions),
-            "currentCategory": current_caterory
-        })
+    @app.route("/quizzes", methods=['POST'])
+    def get_quizzes():
+        parsed = request.get_json()
+        quiz_category = parsed['quiz_category']
+        previous_questions =parsed['previous_questions']
+        print(type(quiz_category['id']))
+        if(quiz_category['id'] == "0"):
+            print('here')
+            questions = Question.query.all()
+        else: 
+            questions = Question.query.filter(Question.id == quiz_category['id']).all()
+        questions_formatted = [question.format() for question in questions]
+        print(questions_formatted)
+        # print(questions_formatted)
+        return jsonify(success=True)
     """
     Create error handlers for all expected errors
     including 404 and 422.
