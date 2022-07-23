@@ -48,7 +48,7 @@ flask run --reload
 
 The `--reload` flag will detect file changes and restart the server automatically.
 
-## To Do Tasks
+## API Documentation
 
 These are the files you'd want to edit in the backend:
 
@@ -69,11 +69,9 @@ One note before you delve into your tasks: for each endpoint, you are expected t
 
 ## Documenting your Endpoints
 
-You will need to provide detailed documentation of your API endpoints including the URL, request parameters, and the response body. Use the example below as a reference.
+### Endpoints
 
-### Documentation Example
-
-`GET '/api/v1.0/categories'`
+`GET '/categories'`
 
 - Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
 - Request Arguments: None
@@ -89,6 +87,222 @@ You will need to provide detailed documentation of your API endpoints including 
   "6": "Sports"
 }
 ```
+
+-Error example:
+
+```json
+{
+  "success": false,
+  "error": 404,
+  "message": "resource not found"
+}
+```
+
+---
+
+`GET '/questions'`
+
+- Fetches a paginated set of questions, total number of questions integer, all categories and current category string
+- Request Arguments: 'page' - integer
+- Returns an object with 10 questions, total number of questions, all categories and current category which is null if not currently set
+
+```json
+{
+  "questions": [
+    {
+      "id": 1,
+      "question": "Whose autobiography is entitled 'I Know Why the Caged Bird Sings'?",
+      "answer": "Maya Angelou",
+      "difficulty": 2,
+      "category": 5
+    }
+  ],
+  "total_questions": 20,
+  "categories": {
+    "1": "Science",
+    "2": "Art",
+    "3": "Geography",
+    "4": "History",
+    "5": "Entertainment",
+    "6": "Sports"
+  },
+  "current_category": "Science"
+}
+```
+
+-Error example:
+
+```json
+{
+  "success": false,
+  "error": 404,
+  "message": "resource not found"
+}
+```
+
+---
+
+`GET '/categories/id/questions'`
+
+- Fetch questions for a category specified by id request argument
+- Request Arguments: `id` - integer
+- Returns: An object with questions for the specified category, total number of questions interger, and current category string
+
+```json
+{
+  "questions": [
+    {
+      "id": 1,
+      "question": "Whose autobiography is entitled 'I Know Why the Caged Bird Sings'?",
+      "answer": "Maya Angelou",
+      "difficulty": 2,
+      "category": 5
+    }
+  ],
+  "total_questions": 20,
+  "current_category": "Entertainment"
+}
+```
+
+-Error example:
+
+```json
+{
+  "success": false,
+  "error": 404,
+  "message": "resource not found"
+}
+```
+
+---
+
+`POST '/questions'`
+
+- Sends a post request to add a new question to the database
+- Request Body:
+
+```json
+{
+  "question": "Who let the dogs out?",
+  "answer": "who who who who",
+  "difficulty": 5,
+  "category": 5
+}
+```
+
+- Returns: Does not return any new data
+  -Error example:
+
+```json
+{
+  "success": false,
+  "error": 422,
+  "message": "unprocessable"
+}
+```
+
+---
+
+`POST '/question/search'`
+
+- Sends a post request to search for a specific question by search term string
+- Request Body:
+
+```json
+{
+  "searchTerm": "Who let the"
+}
+```
+
+- Returns: the current category string, total number of questions interger, a array of questions that match the search term
+
+```json
+{
+  "questions": [
+    {
+      "id": 21,
+      "question": "Who let the dogs out?",
+      "answer": "who who who who",
+      "difficulty": 5,
+      "category": 5
+    }
+  ],
+  "total_questions": 10,
+  "current_category": "Entertainment"
+}
+```
+
+-Error example:
+
+```json
+{
+  "success": false,
+  "error": 422,
+  "message": "unprocessable"
+}
+```
+
+---
+
+`POST '/quizzes'`
+
+- Sends a post request in order to get the next question
+- Request Body:
+
+```json
+{
+  "previous_questions": [4, 2, 9],
+  "quiz_category": {
+    "id": 1,
+    "type": "science"
+  }
+}
+```
+
+- Returns: A new question object and a array of previous question ids
+
+```json
+{
+  "question": {
+    "id": 1,
+    "question": "This is a question",
+    "answer": "This is an answer",
+    "difficulty": 5,
+    "category": 4
+  },
+  "previousQuestions": [2, 3, 9]
+}
+```
+
+-Error example:
+
+```json
+{
+  "success": false,
+  "error": 404,
+  "message": "resource not found"
+}
+```
+
+---
+
+`DELETE '/questions/id'`
+
+- Deletes a question using the specified id
+- Request Arguments: `id` - integer
+- Returns: Does not return any data.
+
+-Error example:
+
+```json
+{
+  "success": false,
+  "error": 404,
+  "message": "resource not found"
+}
+```
+
+---
 
 ## Testing
 
