@@ -214,7 +214,7 @@ One note before you delve into your tasks: for each endpoint, you are expected t
 }
 ```
 
-- Returns: the current category string, total number of questions interger, a array of questions that match the search term
+- Returns: the current category string, total number of questions interger, a array of questions whos text match the search term
 
 ```json
 {

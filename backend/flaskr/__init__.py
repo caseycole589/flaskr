@@ -37,6 +37,7 @@ def create_app(test_config=None):
     @app.route('/categories')
     def get_categories():
         return jsonify({
+            'success':True,
             'categories': get_formatted_categories()
         })
     """
@@ -54,12 +55,15 @@ def create_app(test_config=None):
     def get_questions():
         page = request.args.get('page', 1, type=int)
         current_caterory = request.args.get('currentCategory')
-        print(current_caterory)
         start = (page - 1) * 10
         end = start + 10
         questions = Question.query.all()
+
+        if (len(questions) / 10) + 1 < page:
+            abort(404)
         formatted_questions = [question.format() for question in questions]
         return jsonify({
+            'success':True,
             'questions':formatted_questions[start:end],
             'total_questions': len(formatted_questions),
             'categories': get_formatted_categories(),
@@ -75,7 +79,7 @@ def create_app(test_config=None):
     @app.route("/questions/<int:question_id>", methods=['DELETE'])
     def delete_question(question_id):
         Question.query.get(question_id).delete()
-        return jsonify(success=True)
+        return jsonify({'success':True})
 
     """
     @TODO:
@@ -97,7 +101,7 @@ def create_app(test_config=None):
             category = parsed['category']
         )
         question.insert()
-        return jsonify(success=True) 
+        return jsonify({'success':True})
     """
     @TODO:
     Create a POST endpoint to get questions based on a search term.
@@ -115,6 +119,7 @@ def create_app(test_config=None):
         questions = Question.query.filter(Question.question.ilike(f'%{search_term}%')).all()
         formatted_questions = [question.format() for question in questions]
         return jsonify({
+            'success':True,
             "questions": formatted_questions,
             "totalQuestions": len(formatted_questions),
             "currentCategory": current_caterory
@@ -135,6 +140,7 @@ def create_app(test_config=None):
         questions = Question.query.filter_by(category=category_id).all()
         formatted_questions = [question.format() for question in questions]
         return jsonify({
+            'success':True,
             'questions':formatted_questions,
             'total_questions': len(formatted_questions),
             'current_category': current_caterory
@@ -169,6 +175,7 @@ def create_app(test_config=None):
         else: 
             question = None
         return jsonify({
+            'success':True,
             'previousQuestions': previous_questions,
             'question': question
         })
